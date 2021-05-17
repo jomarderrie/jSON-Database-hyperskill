@@ -12,9 +12,8 @@ public class Main {
 
 
     public static void main(String[] args) {
-        String[] jsonDb = new String[1001];
+        String[] jsonDb = new String[1002];
         Arrays.setAll(jsonDb, i -> "");
-
         System.out.println("Server started!");
         try (ServerSocket server = new ServerSocket(PORT)) {
             boolean onServerStart = true;
@@ -26,11 +25,20 @@ public class Main {
                     DataOutputStream output = new DataOutputStream(socket.getOutputStream());
                     String[] msg = input.readUTF().split(" ");
                     String command = msg[0];
-                    int index = Integer.parseInt(msg[1]);
+                    int index;
                     String value;
                     String message = "";
                     switch (command) {
                         case "set":
+                            index  = parseInt(msg[1]);
+                            System.out.println(index);
+                            if (index==-1){
+                                output.writeUTF("ERROR");
+                                output.flush();
+                                output.close();
+                                socket =null;
+                                break;
+                            }
                             for (int i = 2; i < msg.length; i++) {
                                 message += msg[i];
                                 message += " ";
@@ -42,12 +50,30 @@ public class Main {
                             output.writeUTF("OK");
                             break;
                         case "delete":
+                            index  = parseInt(msg[1]);
+                            System.out.println(index);
+                            if (index==-1){
+                                output.writeUTF("ERROR");
+                                output.flush();
+                                output.close();
+                                socket =null;
+                                break;
+                            }
                             jsonDb[index] = "";
+                            output.writeUTF("OK");
                             output.flush();
                             output.close();
                             socket =null;
                             break;
                         case "get":
+                            index  = parseInt(msg[1]);
+                            if (index==-1){
+                                output.writeUTF("ERROR");
+                                output.flush();
+                                output.close();
+                                socket =null;
+                                break;
+                            }
                             value = jsonDb[index];
                             if (!value.equals("")){
                                 output.writeUTF(value);
@@ -66,33 +92,23 @@ public class Main {
                             output.writeUTF("OK");
                             output.flush();
                             output.close();
-                            socket =null;
-                            onServerStart = false;
                             server.close();
+                            onServerStart = false;
+                            break;
                     }
-                    System.out.println(Arrays.toString(msg));
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
-//        try (ServerSocket server = new ServerSocket(PORT)) {
-//                try (
-//                        Socket socket = server.accept(); // accepting a new client
-//                        DataInputStream input = new DataInputStream(socket.getInputStream());
-//                        DataOutputStream output = new DataOutputStream(socket.getOutputStream())
-//                ) {
-//                    String msg = input.readUTF(); // reading a message
-//                    System.out.println("Received: " + msg);
-//
-//                    String stringMessage = "Sent: A record # 12 was sent!";
-//                    System.out.println(stringMessage);
-//                    output.writeUTF(stringMessage); // resend it to the client
-//                }
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+    public static int parseInt(String intToParse) {
+        int a = Integer.parseInt(intToParse);
+        if (a > 1000 || a < 0) {
+            return -1;
+        } else {
+            return a;
+        }
     }
 }

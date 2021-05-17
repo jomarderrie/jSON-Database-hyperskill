@@ -33,6 +33,7 @@ public class Main {
         String receivedMsg;
         switch (command) {
             case "exit":
+                System.out.println("Sent: " + command);
                 socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
                 input = new DataInputStream(socket.getInputStream());
                 output = new DataOutputStream(socket.getOutputStream());
@@ -48,7 +49,7 @@ public class Main {
                 index = args[3];
                 message = new String[args.length - 5];
                 System.arraycopy(args, 5, message, 0, args.length - 5);
-                System.out.println("Sent: " + index + " " + Arrays.toString(Arrays.stream(message).toArray()).replace("[", "")  //remove the right bracket
+                System.out.println("Sent: " + index + " " + Arrays.toString(Arrays.stream(message).toArray()).replace("[", "")
                         .replace("]", "")
                         .replace(",", ""));
                 socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
@@ -70,7 +71,9 @@ public class Main {
                 input = new DataInputStream(socket.getInputStream());
                 output = new DataOutputStream(socket.getOutputStream());
                 output.writeUTF(command + " " + index);
-                receivedMsg = input.readUTF();
+                receivedMsg = input.readUTF().replace("[", "")
+                        .replace("]", "")
+                        .replace(",", "");
                 System.out.println("Received: " + receivedMsg);
                 socket.close();
                 input.close();
@@ -79,7 +82,4 @@ public class Main {
                 break;
         }
     }
-
-
-
 }

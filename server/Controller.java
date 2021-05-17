@@ -75,7 +75,6 @@ public class Controller {
         } else {
             return a;
         }
-
     }
 
     public void printOk() {
