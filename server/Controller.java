@@ -8,7 +8,7 @@ public class Controller {
     Scanner scanner;
 
     public Controller() {
-        jsonDb = new String[101];
+        jsonDb = new String[1001];
         Arrays.setAll(jsonDb, i -> "");
         scanner = new Scanner(System.in);
         String input;
