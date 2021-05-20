@@ -5,14 +5,14 @@ import com.google.gson.annotations.Expose;
 
 public class ServerResp {
 
-    public static final ServerResp EMPTY = builder()
+    public static final ServerResp EMPTY = builder2()
             .setResponse("ERROR")
             .setReason("No such operation")
             .build();
-    public static final ServerResp OK = builder()
+    public static final ServerResp OK = builder2()
             .setResponse("OK")
             .build();
-    public static final ServerResp NO_KEY = builder()
+    public static final ServerResp NO_KEY = builder2()
             .setResponse("ERROR")
             .setReason("No such key")
             .build();
@@ -52,7 +52,7 @@ public class ServerResp {
         return value;
     }
 
-    public static Builder builder() {
+    public static Builder builder2() {
         return new Builder();
     }
 
