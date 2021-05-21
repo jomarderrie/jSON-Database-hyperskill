@@ -34,6 +34,8 @@ public class Main {
                      DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
                     String command = in.readUTF();
                     Task task = new Gson().fromJson(command, Task.class);
+//                    System.out.println(task.getKey().getAsString());
+//                    System.out.println(task.getValue().getAsString());
                     OperationFactory factory = new OperationFactory(task, this, connection);
                     ServerResp serverResp = factory.createOperation().execute();
 

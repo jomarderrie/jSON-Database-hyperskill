@@ -20,57 +20,91 @@ public class DatabaseConnection implements Connection {
 
 
     @Override
-    public ServerResp get(Task task) {
-        System.out.println(task.getKey());
-        String keys = task.getKey().getAsString();
+    public synchronized ServerResp get(Task task) {
+        List<String> keys = task.getKeys();
         List<Record> list = operator.read();
         Record record = list.stream()
-                .filter(r -> r.getKey().equals(keys))
+                .filter(r -> r.getKey().equals(keys.get(0)))
                 .findFirst()
                 .orElse(null);
 
         if (record == null) {
             return ServerResp.NO_KEY;
+        }
+
+        JsonElement elem = record.getValue();
+        for (int i = 1; i < keys.size(); i++) {
+            if (elem.isJsonObject()) {
+                elem = elem.getAsJsonObject().get(keys.get(i));
+            } else if (elem.isJsonPrimitive()) {
+                elem = elem.getAsJsonPrimitive();
+            }
         }
 
         return ServerResp.builder2()
                 .setResponse("OK")
-                .setValue(record.getValue())
+                .setValue(elem)
                 .build();
     }
 
     @Override
-    public ServerResp set(Task task) {
-        System.out.println(task.getKey());
-        String keys = task.getKey().getAsString();
+    public synchronized ServerResp set(Task task) {
+        List<String> keys = task.getKeys();
         List<Record> list = operator.read();
-        System.out.println(Arrays.toString(list.toArray()));
         Record record = list.stream()
-                .filter(r -> r.getKey().equals(keys))
+                .filter(r -> r.getKey().equals(keys.get(0)))
                 .findFirst()
                 .orElse(null);
+
         if (record == null) {
-            list.add(new Record(keys, task.getValue()));
-            operator.save(list);
-            return ServerResp.OK;
+            list.add(new Record(keys.get(0), task.getValue()));
+        } else if (keys.size() >= 2) {
+            JsonElement elem = record.getValue();
+            for (int i = 1; i < keys.size() - 1; i++) {
+                if (elem.isJsonObject()) {
+                    elem = elem.getAsJsonObject().get(keys.get(i));
+                }
+            }
+            if (elem.isJsonObject()) {
+                if (task.getValue().isJsonPrimitive()) {
+                    elem.getAsJsonObject().addProperty(keys.get(keys.size() - 1), task.getValue().getAsString());
+                } else if (task.getValue().isJsonObject()) {
+                    System.out.println("?????????????????????????");
+                }
+            }
         } else {
-            return ServerResp.EMPTY;
+            int index = list.indexOf(record);
+            list.set(index, new Record(keys.get(0), task.getValue()));
         }
+        operator.save(list);
+        return ServerResp.OK;
     }
 
     @Override
-    public ServerResp delete(Task task) {
-        String keys = task.getKey().getAsString();
+    public synchronized ServerResp delete(Task task) {
+        List<String> keys = task.getKeys();
         List<Record> list = operator.read();
         Record record = list.stream()
-                .filter(r -> r.getKey().equals(keys))
+                .filter(r -> r.getKey().equals(keys.get(0)))
                 .findFirst()
                 .orElse(null);
+
         if (record == null) {
             return ServerResp.NO_KEY;
+        }
+
+        if (keys.size() >= 2) {
+            JsonElement elem = record.getValue();
+            for (int i = 1; i < keys.size() - 1; i++) {
+                if (elem.isJsonObject()) {
+                    elem = elem.getAsJsonObject().get(keys.get(i));
+                }
+            }
+            elem.getAsJsonObject().remove(keys.get(keys.size() - 1));
         } else {
             list.remove(record);
         }
+
         operator.save(list);
         return ServerResp.OK;
     }

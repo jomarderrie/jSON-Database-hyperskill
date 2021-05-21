@@ -31,7 +31,7 @@ public class Main {
 
         Object object = task;
         if (task.file != null) {
-            try (BufferedReader reader = Files.newBufferedReader(Paths.get("client/data/" + task.file))) {
+            try (BufferedReader reader = Files.newBufferedReader(Paths.get("C:\\Users\\kimjongun\\IdeaProjects\\JSON Database\\JSON Database\\task\\src\\client\\data\\" + task.file))) {
                 object = gson.fromJson(reader, Object.class);
             }
         }
